@@ -54,7 +54,7 @@ def main():
             "GPU_Name": [GPU]
                    })
 
-        st.write(data)
+        #st.write(data)
         # Define the catergarical and numarical features 
         data_catergarical = data[["Company","TypeName","OpSys","CPU_name","GPU_Name"]]
         data_numerical = data[["Ram","Weight"]]
@@ -73,13 +73,14 @@ def main():
 
         # Add all the varibles together and make x varibles for prediction.
         data= pd.concat([data_catergarical,data_numerical], axis=1)
-        
+        #Print(data)
 
         # Predict the price using the model
         price = model.predict(data)
-        real_price = (scaler_y.inverse_transform(price.reshape(-1,1)))*295
-        print(real_price)
-        st.write(f"The predicted price of the laptop is: LKR{real_price[0][0]:.2f}")
+        real_price = (scaler_y.inverse_transform(price.reshape(-1,1)))*295-50000
+        #Print(real_price)
+        #st.write(f"The predicted price of the laptop is: LKR{real_price[0][0]:.2f}")
+        st.markdown(f"## The predicted price of the laptop is: LKR {real_price[0][0]:.2f}")
 
 if __name__ == '__main__':
     main()
