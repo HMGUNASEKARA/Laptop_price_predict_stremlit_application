@@ -2,7 +2,31 @@ import streamlit as st
 import pickle 
 import pandas as pd 
 
+from xgboost import XGBRegressor
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+
+# Load the model,encoder,scaler and PCA2
+
+with open("final_model.pkl", "rb") as f:
+    model = pickle.load(f)
+
+with open("encoder.pkl", "rb") as f:
+    encoder = pickle.load(f)
+
+with open("scaler_x.pkl", "rb") as f:
+    scaler_x = pickle.load(f)
+
+with open("pca.pkl", "rb") as f:
+    pca = pickle.load(f)
+
+with open("scaler_y.pkl", "rb") as f:
+    scaler_y = pickle.load(f)
+
+
 def main():
+
     with st.form("Form1"):
         st.header("Laptop Price Prediction App")
         col1,col2 = st.columns(2)
@@ -10,33 +34,52 @@ def main():
         ram = col1.number_input("RAM(GB)",min_value=2, max_value=64)
         weight = col2.number_input("Weight(KG)")
 
-        brand = st.selectbox("Brand",["Lenovo","Dell","HP","Asus","Acer","Others","MSI","Toshiba"])
-        Type  = st.selectbox("Type",["Notebook","Gaming","Ultrabook","2 in 1 Convertible ","Workstation","Netbook"])
-        oparation_system = st.selectbox("Operating System",["Windows","Other","Linux"])
+        brand = st.selectbox("Brand",["Lenovo","Dell","HP","Asus","Acer","Others","MSI","Toshiba","Apple"])
+        Type  = st.selectbox("Type",["Notebook","Gaming","Ultrabook","2 in 1 Convertible","Workstation","Netbook"])
+        oparation_system = st.selectbox("Operating System",["Windows","Other","Linux","Mac"])
         CPU = st.selectbox("CPU",["Intel Core i7","Intel Core i5","Other","Intel Core i3","AMD"])
         GPU = st.selectbox("GPU",["Intel","Nvidia","AMD"])
-        
+        submitted =st.form_submit_button("Predict Price")
 
         
-        
-        
-        submitted = st.form_submit_button("Submit")
-
-    st.header("Laptop Price Prediction App")
 
     if submitted:
         data = pd.DataFrame({
-            "Brand": [brand],
-            "Type": [Type],
-            "RAM": [ram],
+            "Company": [brand],
+            "TypeName": [Type],
+            "Ram": [ram],
             "Weight": [weight],
-            "Operating System": [oparation_system],
-            "CPU": [CPU],
-            "GPU": [GPU]
+            "OpSys": [oparation_system],
+            "CPU_name": [CPU],
+            "GPU_Name": [GPU]
                    })
 
         st.write(data)
+        # Define the catergarical and numarical features 
+        data_catergarical = data[["Company","TypeName","OpSys","CPU_name","GPU_Name"]]
+        data_numerical = data[["Ram","Weight"]]
 
+        # Use the encoder for catergarical features, after encoding that givs the array then make data frame
+        data_catergarical = encoder.transform(data_catergarical) 
+        data_catergarical = pd.DataFrame(data_catergarical, columns=encoder.get_feature_names_out())
+        
+        # Use the standard scaler for numarical features
+        data_numerical = scaler_x.transform(data_numerical)
+        data_numerical = pd.DataFrame(data_numerical,columns=["Ram", "Weight"]   )
+        
+        # Apply PCA to numarical features
+        data_numerical = pca.transform(data_numerical)
+        data_numerical = pd.DataFrame(data_numerical,columns=[f"PCA_{i}" for i in range(data_numerical.shape[1])])
+
+        # Add all the varibles together and make x varibles for prediction.
+        data= pd.concat([data_catergarical,data_numerical], axis=1)
+        
+
+        # Predict the price using the model
+        price = model.predict(data)
+        real_price = (scaler_y.inverse_transform(price.reshape(-1,1)))*295
+        print(real_price)
+        st.write(f"The predicted price of the laptop is: LKR{real_price[0][0]:.2f}")
 
 if __name__ == '__main__':
     main()
