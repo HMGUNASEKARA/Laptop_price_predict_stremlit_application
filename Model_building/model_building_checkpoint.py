@@ -37,13 +37,13 @@ data.head()
 # Identify How many rows and colums in the data set
 data.shape
 
-"""## Exploraty data analysis part"""
+"""## Data preparation"""
 
 # Then check the null values in the data set
 data.isnull().sum()
 
 # So there is no any missing values in tha data set
-# Chech  another information in the data set
+# Chech  another information in the data set(What are the type of the each varible)
 data.info()
 # Accoding to the below result there are different type of data. But in machine learning algorotham only
 # can understand the numarical type data.So, we have to convart this object type data in to numarical by using one hot encoding
@@ -61,7 +61,7 @@ data[['Price_euros','Inches','Ram','Weight',]].corr()
 # Check the one by one colum and identify problem and fix that, First Company colum
 data['Company'].value_counts()
 
-# There are 19 comapany also some brand have little information, we conbine that in to others and consider majory barand available n the market.
+# There are 19 comapany. Also some brand do not have much data. That mean that varible can not effect thatmuch to the model, I conbine it and make variable called others.Consider majory barand available in the market.
 def add_company (input):
     if input == 'Samsung' or input == 'Mediacom' or input == 'Razer' or input == 'Microsoft' or input == 'Vero' or input == 'Xiaomi' or input == 'Chuwi' or input == 'Fujitsu' or input == 'Google' or input == 'LG' or input == 'Huawei':
         return 'Others'
@@ -71,6 +71,7 @@ def add_company (input):
 data['Company'] = data['Company'].apply(add_company)
 
 data['Company'].value_counts()
+# Make the data set as below.
 
 data['TypeName'].value_counts()
 
@@ -125,8 +126,6 @@ def set_OS(input):
 data['OpSys'] = data['OpSys'].apply(set_OS)
 data['OpSys'].value_counts()
 
-data.head()
-
 data.shape
 
 data = data.drop(['Product','ScreenResolution','Cpu','Gpu','laptop_ID','Inches','ScreenResolution'],axis = 1)
@@ -137,7 +136,7 @@ data.info()
 
 data.head()
 
-"""#### This is the end of the feature enginearing, Then lets move on to the  model building part"""
+"""#### This is the end of the data preparation , Then lets move on to the  feature enginearing  part"""
 
 # Lets devide the data set in to dependant and independant varible
 x = data.drop('Price_euros',axis=1)
@@ -145,13 +144,9 @@ y = data['Price_euros']
 
 x.shape
 
-data['GPU_Name'].value_counts()
-
-# Do one hot encoding for holl data set, First get the catagarical data separately
+# Perform the one hot encoding for holl data set, First get the catagarical data separately and perform one hot encoding
 catergarcal_data = ['Company','TypeName','OpSys','CPU_name','GPU_Name']
 x[catergarcal_data].head()
-
-x[catergarcal_data].isnull().sum()
 
 # Now do the encoding part to this data set,
 encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
@@ -163,7 +158,7 @@ Encoded_data
 
 Encoded_data.shape
 
-encoded_cols = encoder.get_feature_names_out(catergarcal_data) # THis get the colum names
+encoded_cols = encoder.get_feature_names_out(catergarcal_data) # This get the colum names
 encoded_df = pd.DataFrame(Encoded_data, columns=encoded_cols)
 encoded_df.tail()
 # Ater encoding we got the array.So we have to create an dataframe to,
@@ -180,14 +175,16 @@ encoded_df = encoded_df.reset_index(drop=True)
 final_x = pd.concat([x.drop(columns= catergarcal_data),encoded_df],axis=1)
 final_x.shape
 
-# Get five number summary (min, Q1, median, Q3, max) for all independent variables in X
-summary = x.describe(percentiles=[0.25, 0.5, 0.75]).loc[['min', '25%', '50%', '75%', 'max']]
+final_x.head()
+
+# Get five number summary (min, Q1, median, Q3, max) for all numarical independent variables. Beacaues I have todecide whether is this shoid be scaled or not
+summary = final_x[['Ram','Weight']].describe(percentiles=[0.25, 0.5, 0.75]).loc[['min', '25%', '50%', '75%', 'max']]
 summary
 
 y_summary = y.describe(percentiles=[0.25,0.5,0.75]).loc[['min', '25%', '50%', '75%', 'max']]
 y_summary
 
-"""##### The numarical value of the data set are in the different range , so we have get them in to the same range. For that we used standerlization.for other numarical data"""
+"""##### The numarical value of the data set are not in the same range , so we have get them in to the same range. For that we used standerlization."""
 
 # Create data set for standerlization
 y = y.reset_index(drop=True)
@@ -200,18 +197,20 @@ standed_numaric_data = pd.DataFrame(scale_numaric_data,columns=numaric_data.colu
 standed_numaric_data.head()
 # Then convart all the numaric data in to scaler. Now we have to make x and y varible again
 
-y_train_b_s = standed_numaric_data['Price_euros']
+y = standed_numaric_data['Price_euros']
 
-x_train_b_s = pd.concat([final_x.drop(columns=['Ram','Weight']),standed_numaric_data[['Ram','Weight']]],axis=1)
+x = pd.concat([final_x.drop(columns=['Ram','Weight']),standed_numaric_data[['Ram','Weight']]],axis=1)
 
 #final_x = pd.concat([x.drop(columns= catergarcal_data),encoded_df],axis=1)
 #final_x.head()
 
-x_train_b_s.head()
+x.shape,y.shape
+
+x.head(),y.head()
 
 """Ok, Now data set is ready to build the model, Then build the model, lets start this in simple algorithams and then try complecated algorithams"""
 
-x_train, x_test, y_train, y_test = train_test_split(x_train_b_s, y_train_b_s, test_size=0.2, random_state=42)
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
 # Testing each algoritham by and identify which one is the best for our model
 # Apply cross validation for the Linear Regression model
@@ -273,19 +272,11 @@ cross_val_score(D_Tre_model,x_train,y_train,cv=10).mean()
 KN_model = KNeighborsRegressor()
 cross_val_score(KN_model,x_train,y_train,cv=10).mean()
 
-pred_KN = KN_model_grid_seach.predict(x_test)
-Accuracy = r2_score(y_test,pred_KN)
-MSE = mean_squared_error(y_test,pred_KN)
-MAE = mean_absolute_error(y_test,pred_KN)
-print(f"Accuracy: {Accuracy}")
-print(f"MSE: {MSE}")
-print(f"MAE: {MAE}")
-
 # Apply cross validation to the SVM model
 SVM_model = SVR()
 cross_val_score(SVM_model,x_train,y_train,cv=10).mean()
 
-"""###### Among above the algoritham K-nearest algoritham perform well,So as first step I am going to hyper parameteric tune this algoritham"""
+"""###### Among above the algoritham K-nearest algoritham and SVM algoritham perform well,So as first step I am going to tune  hyper parameters above two parameters"""
 
 from sklearn.model_selection import GridSearchCV
 
@@ -296,15 +287,37 @@ pram = {'n_neighbors': list(range(1, 21)),
 KN_model_grid_seach = GridSearchCV(KN_model,param_grid=pram,cv=10,scoring='r2')
 KN_model_grid_seach.fit(x_train,y_train)
 
-KN_model_grid_seach.best_params_
+pred_KN_test = KN_model_grid_seach.predict(x_test)
+pred_KN_train = KN_model_grid_seach.predict(x_train)
 
-pred_KN = KN_model_grid_seach.predict(x_test)
-Accuracy = r2_score(y_test,pred_KN)
-MSE = mean_squared_error(y_test,pred_KN)
-MAE = mean_absolute_error(y_test,pred_KN)
+Accuracy = r2_score(y_test,pred_KN_test)
+MSE = mean_squared_error(y_test,pred_KN_test)
+MAE = mean_absolute_error(y_test,pred_KN_test)
+train_accuracy = r2_score(y_train,pred_KN_train)
 print(f"Accuracy: {Accuracy}")
 print(f"MSE: {MSE}")
 print(f"MAE: {MAE}")
+print(f"Training Accuracy: {train_accuracy}")
+
+param_grid = {
+    'C': [0.1, 1, 10, 100],           # Regularization strength
+    'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
+    'gamma': ['scale', 'auto']        # Kernel coefficient
+}
+SVM_grid_search = GridSearchCV(SVM_model, param_grid, cv=5, scoring='accuracy', verbose=1, n_jobs=-1)
+SVM_grid_search.fit(x_train, y_train)
+
+pred_SVM_test = SVM_grid_search.predict(x_test)
+pred_SVM_train = SVM_grid_search.predict(x_train)
+
+Accuracy = r2_score(y_test,pred_SVM_test)
+MSE = mean_squared_error(y_test,pred_SVM_test)
+MAE = mean_absolute_error(y_test,pred_SVM_test)
+train_accuracy = r2_score(y_train,pred_SVM_train)
+print(f"Accuracy: {Accuracy}")
+print(f"MSE: {MSE}")
+print(f"MAE: {MAE}")
+print(f"Training Accuracy: {train_accuracy}")
 
 """##### Upto here we try the multiple leaner regression model,Lasso regression model,KNN,SVR and decision tree. Among these algorithmas when we used cross validation KNN perform the best. After hyper parametric tune that gives the 0.8 accuracy.Lets try to increte this acuracy.
 
@@ -318,6 +331,21 @@ cross_val_score(R_forest_model,x_train,y_train,cv=10,).mean()
 from xgboost import XGBRegressor
 XG_boost_model = XGBRegressor(n_estimators=100, learning_rate=0.1)
 cross_val_score(XG_boost_model,x_train,y_train,cv=10,).mean()
+
+
+
+XG_boost_model.fit(x_train,y_train)
+y_pred_XG = XG_boost_model.predict(x_test)
+y_pred_XG_train = XG_boost_model.predict(x_train)
+
+Accuracy = r2_score(y_test,y_pred_XG)
+MSE = mean_squared_error(y_test,y_pred_XG)
+MAE = mean_absolute_error(y_test,y_pred_XG)
+train_accuracy = r2_score(y_train,y_pred_XG_train)
+print(f"Accuracy: {Accuracy}")
+print(f"MSE: {MSE}")
+print(f"MAE: {MAE}")
+print(f"Training Accuracy: {train_accuracy}")
 
 #from sklearn.model_selection import GridSearchCV
 
@@ -377,9 +405,214 @@ grid_search_xgb.fit(x_train, y_train)
 best_xgb_model = grid_search_xgb.best_estimator_
 print("Best Parameters (XGBoost):", grid_search_xgb.best_params_)
 
-best_xgb_model.score(x_test, y_test)
+y_pred_xgb = best_xgb_model.predict(x_test)
+y_pred_xgb_train = best_xgb_model.predict(x_train)
+
+Accuracy = r2_score(y_test,y_pred_xgb)
+MSE = mean_squared_error(y_test,y_pred_xgb)
+MAE = mean_absolute_error(y_test,y_pred_xgb)
+train_accuracy = r2_score(y_train,y_pred_xgb_train)
+print(f"Accuracy: {Accuracy}")
+print(f"MSE: {MSE}")
+print(f"MAE: {MAE}")
+print(f"Training Accuracy: {train_accuracy}")
+
+best_xgb_model.score(x_train,y_train)
+
+"""#### Up to here I  used advance machine learning approches. But I got only 0.8 accuracy of this model. Now I move on to the early part of the modelbuilding pipline and do feature enginearing again. THat mean I apply principle component analysis(PCA). First I try by using two independant numarical varible  make one PCA varibe . Then I try used two PCA varible."""
+
+x = pd.concat([final_x.drop(columns=['Ram','Weight']),standed_numaric_data[['Ram','Weight']]],axis=1)
+
+#final_x = pd.concat([x.drop(columns= catergarcal_data),encoded_df],axis=1)
+#final_x.head()
+
+from sklearn.decomposition import PCA
+x_numaric = x[['Ram','Weight']]
+PCA1 = PCA(n_components=1)
+x_pca = PCA1.fit_transform(x_numaric)
+x_pca.shape
+
+# After Creating new independant varible called "PCA1". Make the new x varible
+PCA_1_x = x.drop(columns=['Ram','Weight'],inplace=False)
+PCA_1_x = pd.concat([PCA_1_x,pd.DataFrame(x_pca,columns=['PCA1'])],axis=1)
+PCA_1_x.head()
+
+# Split the data set
+x_train, x_test, y_train, y_test = train_test_split(PCA_1_x, y, test_size=0.2, random_state=42)
+
+# Then perform the KNN algoritham for this new dataset
+# Apply cross validation to the KNeighbors model
+KN_model_PCA1 = KNeighborsRegressor()
+cross_val_score(KN_model_PCA1,x_train,y_train,cv=10).mean()
+
+y_pred_KN_PCA1 = KN_model.fit(x_train,y_train).predict(x_test)
+y_pred_KN_train_PCA1 = KN_model.fit(x_train,y_train).predict(x_train)
+Accuracy = r2_score(y_test,y_pred_KN_PCA1)
+MSE = mean_squared_error(y_test,y_pred_KN_PCA1)
+MAE = mean_absolute_error(y_test,y_pred_KN_PCA1)
+train_accuracy = r2_score(y_train,y_pred_KN_train_PCA1)
+print(f"Accuracy: {Accuracy}")
+print(f"MSE: {MSE}")
+print(f"MAE: {MAE}")
+print(f"Train_accuracy: {train_accuracy}")
+
+# Perform the randomforestalgoritham for the new data set
+R_forest_model_PCA1 = RandomForestRegressor(n_estimators=100)
+cross_val_score(R_forest_model_PCA1,x_train,y_train,cv=10,).mean()
+
+y_pred_R_PCA1 = R_forest_model_PCA1.fit(x_train,y_train).predict(x_test)
+y_pred_R_train_PCA1 = R_forest_model_PCA1.fit(x_train,y_train).predict(x_train)
+Accuracy = r2_score(y_test,y_pred_R_PCA1)
+MSE = mean_squared_error(y_test,y_pred_R_PCA1)
+MAE = mean_absolute_error(y_test,y_pred_R_PCA1)
+train_accuracy = r2_score(y_train,y_pred_R_train_PCA1)
+print(f"Accuracy: {Accuracy}")
+print(f"MSE: {MSE}")
+print(f"MAE: {MAE}")
+print(f"Train_accuracy: {train_accuracy}")
+
+from xgboost import XGBRegressor
+XG_boost_model_PCA1 = XGBRegressor(n_estimators=100, learning_rate=0.1)
+cross_val_score(XG_boost_model_PCA1,x_train,y_train,cv=10,).mean()
+
+# Define parameter grid
+param_grid_xgb = {
+    'n_estimators': [100, 200],
+    'learning_rate': [0.05, 0.1],
+    'max_depth': [3, 5],
+    'subsample': [0.8, 1.0],
+    'colsample_bytree': [0.8, 1.0]
+}
+
+#Grid Search
+grid_search_xgb_PCA1 = GridSearchCV(
+    estimator=XG_boost_model_PCA1 ,
+    param_grid=param_grid_xgb,
+    cv=5,
+    scoring='r2',
+    n_jobs=-1,
+    verbose=2
+)
+
+# Fit
+grid_search_xgb_PCA1.fit(x_train, y_train)
+
+# Best model and parameters
+best_xgb_model_PCA1 = grid_search_xgb_PCA1.best_estimator_
+print("Best Parameters (XGBoost):", grid_search_xgb_PCA1.best_params_)
+
+y_pred_XG_PCA1 = best_xgb_model_PCA1.fit(x_train,y_train).predict(x_test)
+y_pred_XG_train_PCA1 = best_xgb_model_PCA1.fit(x_train,y_train).predict(x_train)
+Accuracy = r2_score(y_test,y_pred_XG_PCA1)
+MSE = mean_squared_error(y_test,y_pred_XG_PCA1)
+MAE = mean_absolute_error(y_test,y_pred_XG_PCA1)
+train_accuracy = r2_score(y_train,y_pred_XG_train_PCA1)
+print(f"Accuracy: {Accuracy}")
+print(f"MSE: {MSE}")
+print(f"MAE: {MAE}")
+print(f"Train_accuracy: {train_accuracy}")
+
+"""#### Here I try get two PCA varibles and build the model"""
+
+# Now create the two PCA varibles and perform the model.
+x_numaric = x[['Ram','Weight']]
+PCA2 = PCA(n_components=2)
+x_pca2 = PCA2.fit_transform(x_numaric)
+x_pca2.shape
+
+PCA_2_x = x.drop(columns=['Ram','Weight'],inplace=False)
+PCA_2_x = pd.concat([PCA_2_x,pd.DataFrame(x_pca2,columns=['PCA1','PCA2'])],axis=1)
+PCA_2_x.head()
+
+# Split the data set
+x_train, x_test, y_train, y_test = train_test_split(PCA_2_x, y, test_size=0.2, random_state=42)
+
+# Then perform the KNN algoritham for this new dataset
+# Apply cross validation to the KNeighbors model
+KN_model_PCA2 = KNeighborsRegressor()
+cross_val_score(KN_model_PCA2,x_train,y_train,cv=10).mean()
+
+y_pred_KN_PCA2 = KN_model_PCA2.fit(x_train,y_train).predict(x_test)
+y_pred_KN_train_PCA2 = KN_model_PCA2.fit(x_train,y_train).predict(x_train)
+Accuracy = r2_score(y_test,y_pred_KN_PCA2)
+MSE = mean_squared_error(y_test,y_pred_KN_PCA2)
+MAE = mean_absolute_error(y_test,y_pred_KN_PCA2)
+train_accuracy = r2_score(y_train,y_pred_KN_train_PCA2)
+print(f"Accuracy: {Accuracy}")
+print(f"MSE: {MSE}")
+print(f"MAE: {MAE}")
+print(f"Train_accuracy: {train_accuracy}")
+
+R_forest_model_PCA2 = RandomForestRegressor(n_estimators=100)
+cross_val_score(R_forest_model_PCA2,x_train,y_train,cv=10,).mean()
+
+y_pred_R_PCA2 = R_forest_model_PCA2.fit(x_train,y_train).predict(x_test)
+y_pred_R_train_PCA2 = R_forest_model_PCA2.fit(x_train,y_train).predict(x_train)
+
+Accuracy = r2_score(y_test,y_pred_R_PCA2)
+MSE = mean_squared_error(y_test,y_pred_R_PCA2)
+MAE = mean_absolute_error(y_test,y_pred_R_PCA2)
+train_accuracy = r2_score(y_train,y_pred_R_train_PCA2)
+print(f"Accuracy: {Accuracy}")
+print(f"MSE: {MSE}")
+print(f"MAE: {MAE}")
+print(f"Train_accuracy: {train_accuracy}")
+
+x_train = x_train.values
+y_train = y_train.values
+XG_boost_model_PCA2 = XGBRegressor(n_estimators=100, learning_rate=0.1)
+cross_val_score(XG_boost_model_PCA2,x_train,y_train,cv=10,).mean()
+
+# Tune the hyper parameters of the xgboost algoritham.
+# Define parameter grid
+param_grid_xgb = {
+    'n_estimators': [100, 200],
+    'learning_rate': [0.05, 0.1],
+    'max_depth': [3, 5],
+    'subsample': [0.8, 1.0],
+    'colsample_bytree': [0.8, 1.0]
+}
+
+#Grid Search
+grid_search_xgb_PCA2 = GridSearchCV(
+    estimator=XG_boost_model ,
+    param_grid=param_grid_xgb,
+    cv=5,
+    scoring='r2',
+    n_jobs=-1,
+    verbose=2
+)
+
+# Fit
+grid_search_xgb_PCA2.fit(X, Y)
+
+# Best model and parameters
+best_xgb_model_PCA2 = grid_search_xgb_PCA2.best_estimator_
+print("Best Parameters (XGBoost):", grid_search_xgb_PCA2.best_params_)
+
+y_pred_XG_PCA2 = best_xgb_model_PCA2.fit(x_train,y_train).predict(x_test)
+y_pred_XG_train_PCA2 = best_xgb_model_PCA2.fit(x_train,y_train).predict(x_train)
+
+Accuracy = r2_score(y_test,y_pred_XG_PCA2)
+MSE = mean_squared_error(y_test,y_pred_XG_PCA2)
+MAE = mean_absolute_error(y_test,y_pred_XG_PCA2)
+train_accuracy = r2_score(y_train,y_pred_XG_train_PCA2)
+print(f"Accuracy: {Accuracy}")
+print(f"MSE: {MSE}")
+print(f"MAE: {MAE}")
+print(f"Train_accuracy: {train_accuracy}")
+
+"""#### Now save the model, scaler,encoder and PCA for the build the web application"""
 
 import pickle
+with open('scaler.pkl','wb')as f:
+  pickle.dump(scaler,f)
 
-#with open ('Laptop_price_prediction_model','wb') as file:
-#  pickle.dump(best_xgb_model,file)
+with open('encoder.pkl','wb')as f:
+  pickle.dump(encoder,f)
+
+with open ('PCA.pkl','wb')as f:
+  pickle.dump(PCA2,f)
+
+with open ('final_model.pkl','wb')as f:
+  pickle.dump(best_xgb_model_PCA2,f)
