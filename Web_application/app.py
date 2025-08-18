@@ -9,17 +9,18 @@ from sklearn.decomposition import PCA
 
 # Load the model,encoder,scaler and PCA2
 
+with open("encoder.pkl", "rb") as f:
+    encoder = pickle.load(f)
+
 with open("final_model.pkl", "rb") as f:
     model = pickle.load(f)
 
-with open("encoder.pkl", "rb") as f:
-    encoder = pickle.load(f)
+with open("pca.pkl", "rb") as f:
+    pca = pickle.load(f)
 
 with open("scaler_x.pkl", "rb") as f:
     scaler_x = pickle.load(f)
 
-with open("pca.pkl", "rb") as f:
-    pca = pickle.load(f)
 
 with open("scaler_y.pkl", "rb") as f:
     scaler_y = pickle.load(f)
