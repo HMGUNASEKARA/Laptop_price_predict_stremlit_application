@@ -22,6 +22,8 @@ with open(model_path, "rb") as f:
     model = pickle.load(f)
 
 
+
+
 # Get the directory of the current script
 BASE_DIR2 = os.path.dirname(os.path.abspath(__file__))
 
@@ -33,15 +35,19 @@ with open(encoder_path, "rb") as f:
     encoder = pickle.load(f)
 
 
+
+
 # Get the directory of the current script
 BASE_DIR3 = os.path.dirname(os.path.abspath(__file__))
 
 # Build the full path to the pickle file
-pca_path = os.path.join(BASE_DIR3, "pca.pkl")
+pca_path = os.path.join(BASE_DIR3, "PCA.pkl")
 
 # Load the model
 with open(pca_path, "rb") as f:
     pca = pickle.load(f)
+
+
 
 # Get the directory of the current script
 BASE_DIR4 = os.path.dirname(os.path.abspath(__file__))
@@ -52,6 +58,8 @@ scaler_x_path = os.path.join(BASE_DIR4, "scaler_x.pkl")
 # Load the model
 with open(scaler_x_path, "rb") as f:
     scaler_x = pickle.load(f)
+
+
 
 # Get the directory of the current script
 BASE_DIR5 = os.path.dirname(os.path.abspath(__file__))
