@@ -8,22 +8,76 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
 # Load the model,encoder,scaler and PCA2
+import os
+import pickle
 
-with open("encoder.pkl", "rb") as f:
-    encoder = pickle.load(f)
+# Get the directory of the current script
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-with open("final_model.pkl", "rb") as f:
+# Build the full path to the pickle file
+model_path = os.path.join(BASE_DIR, "final_model.pkl")
+
+# Load the model
+with open(model_path, "rb") as f:
     model = pickle.load(f)
 
-with open("pca.pkl", "rb") as f:
+
+# Get the directory of the current script
+BASE_DIR2 = os.path.dirname(os.path.abspath(__file__))
+
+# Build the full path to the pickle file
+encoder_path = os.path.join(BASE_DIR2, "encoder.pkl")
+
+# Load the model
+with open(encoder_path, "rb") as f:
+    encoder = pickle.load(f)
+
+
+# Get the directory of the current script
+BASE_DIR3 = os.path.dirname(os.path.abspath(__file__))
+
+# Build the full path to the pickle file
+pca_path = os.path.join(BASE_DIR3, "pca.pkl")
+
+# Load the model
+with open(pca_path, "rb") as f:
     pca = pickle.load(f)
 
-with open("scaler_x.pkl", "rb") as f:
+# Get the directory of the current script
+BASE_DIR4 = os.path.dirname(os.path.abspath(__file__))
+
+# Build the full path to the pickle file
+scaler_x_path = os.path.join(BASE_DIR4, "scaler_x.pkl")
+
+# Load the model
+with open(scaler_x_path, "rb") as f:
     scaler_x = pickle.load(f)
 
+# Get the directory of the current script
+BASE_DIR5 = os.path.dirname(os.path.abspath(__file__))
 
-with open("scaler_y.pkl", "rb") as f:
+# Build the full path to the pickle file
+scaler_y_path = os.path.join(BASE_DIR5, "scaler_y.pkl")
+
+# Load the model
+with open(scaler_y_path, "rb") as f:
     scaler_y = pickle.load(f)
+
+#with open("encoder.pkl", "rb") as f:
+    #encoder = pickle.load(f)
+
+#with open("final_model.pkl", "rb") as f:
+   # model = pickle.load(f)
+
+#with open("pca.pkl", "rb") as f:
+   # pca = pickle.load(f)
+
+#with open("scaler_x.pkl", "rb") as f:
+#    scaler_x = pickle.load(f)
+
+
+#with open("scaler_y.pkl", "rb") as f:
+#    scaler_y = pickle.load(f)
 
 
 def main():
