@@ -143,7 +143,7 @@ def main():
         real_price = (scaler_y.inverse_transform(price.reshape(-1,1)))*295-50000
         #Print(real_price)
         #st.write(f"The predicted price of the laptop is: LKR{real_price[0][0]:.2f}")
-        st.markdown(f"## The predicted price of the laptop is: LKR {real_price[0][0]:.2f}")
+        st.markdown(f"## The Laptop Price is: LKR {real_price[0][0]:.2f}")
 
 if __name__ == '__main__':
     main()
