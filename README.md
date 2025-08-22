@@ -1,4 +1,8 @@
+
 # Laptop Price Prediction in the Sri Lankan Market
+
+## 🚀 Check out the deployed app here:
+[Laptop Price Predictor](https://your-app-link.com)
 
 ## 1. Machine Learning Concepts Applied
 This project framed laptop price prediction as a supervised regression problem, aiming to estimate laptop prices based on specifications. Key concepts applied include:
